@@ -18,12 +18,18 @@ all:
 
 	x86_64-elf-g++ \
 	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/printk.cpp -o printk.o
+
+	x86_64-elf-g++ \
+	-m32 \
 	-nostdlib \
 	-Wl,-m,elf_i386 \
 	-T linker.ld \
 	-o kernel.elf \
-	boot.o multiboot.o kernel.o terminal.o
-
+	boot.o multiboot.o kernel.o terminal.o printk.o
 
 iso: all
 	mkdir -p iso/boot/grub
