@@ -25,11 +25,28 @@ all:
 
 	x86_64-elf-g++ \
 	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/gdt.cpp -o gdt.o
+
+	nasm -f elf32 kernel/gdt.asm -o gdtasm.o
+
+
+	x86_64-elf-g++ \
+	-m32 \
 	-nostdlib \
 	-Wl,-m,elf_i386 \
 	-T linker.ld \
 	-o kernel.elf \
-	boot.o multiboot.o kernel.o terminal.o printk.o
+	boot.o \
+	multiboot.o \
+	kernel.o \
+	terminal.o \
+	printk.o \
+	gdt.o \
+	gdtasm.o
+
 
 iso: all
 	mkdir -p iso/boot/grub
@@ -37,8 +54,10 @@ iso: all
 	cp grub.cfg iso/boot/grub/grub.cfg
 	grub-mkrescue -o neuralkernel.iso iso
 
+
 run: iso
 	qemu-system-x86_64 -cdrom neuralkernel.iso
+
 
 clean:
 	rm -rf *.o kernel.elf neuralkernel.iso iso
