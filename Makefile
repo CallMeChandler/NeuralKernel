@@ -32,6 +32,22 @@ all:
 
 	nasm -f elf32 kernel/gdt.asm -o gdtasm.o
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/idt.cpp -o idt.o
+
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/isr.cpp -o isr.o
+
+	nasm -f elf32 kernel/idt.asm -o idtasm.o
+
 
 	x86_64-elf-g++ \
 	-m32 \
@@ -45,7 +61,10 @@ all:
 	terminal.o \
 	printk.o \
 	gdt.o \
-	gdtasm.o
+	gdtasm.o \
+	idt.o \
+	idtasm.o \
+	isr.o
 
 
 iso: all
