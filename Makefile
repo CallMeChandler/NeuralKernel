@@ -2,12 +2,14 @@ all:
 	nasm -f elf32 boot/multiboot2.asm -o multiboot.o
 	nasm -f elf32 boot/boot.asm -o boot.o
 
+
 	x86_64-elf-g++ \
 	-m32 \
 	-ffreestanding \
 	-fno-exceptions \
 	-fno-rtti \
 	-c kernel/kernel.cpp -o kernel.o
+
 
 	x86_64-elf-g++ \
 	-m32 \
@@ -16,12 +18,14 @@ all:
 	-fno-rtti \
 	-c kernel/terminal.cpp -o terminal.o
 
+
 	x86_64-elf-g++ \
 	-m32 \
 	-ffreestanding \
 	-fno-exceptions \
 	-fno-rtti \
 	-c kernel/printk.cpp -o printk.o
+
 
 	x86_64-elf-g++ \
 	-m32 \
@@ -30,7 +34,9 @@ all:
 	-fno-rtti \
 	-c kernel/gdt.cpp -o gdt.o
 
+
 	nasm -f elf32 kernel/gdt.asm -o gdtasm.o
+
 
 	x86_64-elf-g++ \
 	-m32 \
@@ -39,6 +45,7 @@ all:
 	-fno-rtti \
 	-c kernel/idt.cpp -o idt.o
 
+
 	x86_64-elf-g++ \
 	-m32 \
 	-ffreestanding \
@@ -46,7 +53,25 @@ all:
 	-fno-rtti \
 	-c kernel/isr.cpp -o isr.o
 
+
 	nasm -f elf32 kernel/idt.asm -o idtasm.o
+
+
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/pic.cpp -o pic.o
+
+
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/pit.cpp -o pit.o
+
 
 
 	x86_64-elf-g++ \
@@ -64,7 +89,10 @@ all:
 	gdtasm.o \
 	idt.o \
 	idtasm.o \
-	isr.o
+	isr.o \
+	pic.o \
+	pit.o
+
 
 
 iso: all

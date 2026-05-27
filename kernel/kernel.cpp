@@ -2,6 +2,8 @@
 #include "printk.h"
 #include "gdt.h"
 #include "idt.h"
+#include "pic.h"
+#include "pit.h"
 
 extern "C"
 void kernel_main()
@@ -10,26 +12,26 @@ void kernel_main()
 
     printk::log(
         printk::INFO,
-        "Booting kernel..."
+        "Booting..."
     );
 
     gdt::init();
 
     idt::init();
 
+    pic::remap();
+
+    pit::init();
+
     printk::log(
         printk::INFO,
-        "Triggering interrupt test"
-    );
-
-    __asm__(
-        "div %0"
-        :
-        : "r"(0)
+        "Kernel alive"
     );
 
     while(1)
     {
-        __asm__("hlt");
+        __asm__(
+            "hlt"
+        );
     }
 }
