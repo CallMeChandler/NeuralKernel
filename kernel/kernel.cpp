@@ -4,6 +4,7 @@
 #include "idt.h"
 #include "pic.h"
 #include "pit.h"
+#include "irq.h"
 
 extern "C"
 void kernel_main()
@@ -21,17 +22,19 @@ void kernel_main()
 
     pic::remap();
 
+    irq::init();
+
     pit::init();
+
+    __asm__("sti");
 
     printk::log(
         printk::INFO,
-        "Kernel alive"
+        "Interrupts enabled"
     );
 
     while(1)
     {
-        __asm__(
-            "hlt"
-        );
+        __asm__("hlt");
     }
 }

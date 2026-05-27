@@ -1,8 +1,10 @@
 #include "idt.h"
 #include "printk.h"
 
-namespace idt{
-    struct Entry{
+namespace idt
+{
+    struct Entry
+    {
         uint16_t offset_low;
         uint16_t selector;
         uint8_t zero;
@@ -10,7 +12,8 @@ namespace idt{
         uint16_t offset_high;
     } __attribute__((packed));
 
-    struct Pointer{
+    struct Pointer
+    {
         uint16_t limit;
         uint32_t base;
     } __attribute__((packed));
@@ -31,45 +34,46 @@ namespace idt{
 
     extern "C" void isr0();
 
-
+    extern "C" void irq0();
 
     void init()
     {
         printk::log(
             printk::INFO,
-            "Initializing IDT..."
-        );
+            "Initializing IDT...");
 
-        for(int i=0;i<256;i++)
+        for (int i = 0; i < 256; i++)
         {
             set_gate(
                 i,
                 0,
                 0,
-                0
-            );
+                0);
         }
 
         set_gate(
             0,
             (uint32_t)isr0,
             0x08,
-            0x8E
-        );
+            0x8E);
+
+        set_gate(
+            32,
+            (uint32_t)irq0,
+            0x08,
+            0x8E);
 
         idt_ptr.limit =
-            sizeof(idt)-1;
+            sizeof(idt) - 1;
 
         idt_ptr.base =
             (uint32_t)&idt;
 
         idt_load(
-            (uint32_t)&idt_ptr
-        );
+            (uint32_t)&idt_ptr);
 
         printk::log(
             printk::INFO,
-            "IDT initialized"
-        );
+            "IDT initialized");
     }
 }

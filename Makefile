@@ -73,6 +73,17 @@ all:
 	-c kernel/pit.cpp -o pit.o
 
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/irq.cpp -o irq.o
+
+
+	nasm -f elf32 kernel/irq.asm -o irqasm.o
+
+
 
 	x86_64-elf-g++ \
 	-m32 \
@@ -91,7 +102,9 @@ all:
 	idtasm.o \
 	isr.o \
 	pic.o \
-	pit.o
+	pit.o \
+	irq.o \
+	irqasm.o
 
 
 
