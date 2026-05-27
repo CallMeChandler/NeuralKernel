@@ -36,6 +36,8 @@ namespace idt
 
     extern "C" void irq0();
 
+    extern "C" void irq1();
+
     void init()
     {
         printk::log(
@@ -60,6 +62,12 @@ namespace idt
         set_gate(
             32,
             (uint32_t)irq0,
+            0x08,
+            0x8E);
+
+        set_gate(
+            33,
+            (uint32_t)irq1,
             0x08,
             0x8E);
 

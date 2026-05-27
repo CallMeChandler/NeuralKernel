@@ -83,6 +83,15 @@ all:
 
 	nasm -f elf32 kernel/irq.asm -o irqasm.o
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/keyboard.cpp -o keyboard.o
+
+	nasm -f elf32 kernel/keyboard.asm -o keyboardasm.o
+
 
 
 	x86_64-elf-g++ \
@@ -104,7 +113,9 @@ all:
 	pic.o \
 	pit.o \
 	irq.o \
-	irqasm.o
+	irqasm.o \
+	keyboard.o \
+	keyboardasm.o
 
 
 

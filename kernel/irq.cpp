@@ -13,10 +13,7 @@ namespace irq
 
         if((ticks % 100)==0)
         {
-            printk::log(
-                printk::INFO,
-                "1 second passed"
-            );
+            //timer is alive
         }
 
         // End Of Interrupt
