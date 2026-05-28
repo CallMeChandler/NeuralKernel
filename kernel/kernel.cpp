@@ -7,6 +7,7 @@
 #include "irq.h"
 #include "keyboard.h"
 #include "shell.h"
+#include "telemetry.h"
 
 extern "C"
 void kernel_main()
@@ -29,6 +30,8 @@ void kernel_main()
     pit::init();
 
     keyboard::init();
+
+    telemetry::initialize();
 
     shell::initialize();
 

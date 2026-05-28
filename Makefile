@@ -99,6 +99,13 @@ all:
 	-fno-rtti \
 	-c kernel/shell.cpp -o shell.o
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/telemetry.cpp -o telemetry.o
+
 
 
 	x86_64-elf-g++ \
@@ -123,7 +130,8 @@ all:
 	irqasm.o \
 	keyboard.o \
 	keyboardasm.o \
-	shell.o
+	shell.o \
+	telemetry.o
 
 
 

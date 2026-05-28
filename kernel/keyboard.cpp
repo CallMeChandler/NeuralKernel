@@ -3,6 +3,7 @@
 #include "io.h"
 #include "terminal.h"
 #include "shell.h"
+#include "telemetry.h"
 
 namespace keyboard
 {
@@ -49,6 +50,8 @@ namespace keyboard
         uint8_t scancode =
             inb(0x60);
 
+        telemetry::keyboard_irqs++;
+
         // ignore key releases
         if(scancode & 0x80)
         {
@@ -61,6 +64,7 @@ namespace keyboard
 
         if(c)
         {
+            telemetry::keys_pressed++;
             shell::handle_input(c);
         }
 

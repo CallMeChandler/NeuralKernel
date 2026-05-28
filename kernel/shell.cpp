@@ -1,6 +1,7 @@
 #include "shell.h"
 #include "terminal.h"
 #include "printk.h"
+#include "telemetry.h"
 
 namespace shell
 {
@@ -14,9 +15,8 @@ namespace shell
     }
 
     static bool strcmp(
-        const char* a,
-        const char* b
-    )
+        const char *a,
+        const char *b)
     {
         int i = 0;
 
@@ -35,48 +35,50 @@ namespace shell
 
     static void execute_command()
     {
+        telemetry::commands_executed++;
         terminal::putchar('\n');
 
         if (strcmp(input_buffer, "help"))
         {
             terminal::write(
-                "Commands:\n"
-            );
+                "Commands:\n");
 
             terminal::write(
-                "help\n"
-            );
+                "help\n");
 
             terminal::write(
-                "clear\n"
-            );
+                "clear\n");
 
             terminal::write(
-                "about\n"
-            );
+                "about\n");
+
+            terminal::write(
+                "telemetry\n");
         }
 
-        else if(strcmp(input_buffer, "clear"))
+        else if (strcmp(input_buffer, "clear"))
         {
             terminal::clear();
         }
 
-        else if(strcmp(input_buffer, "about"))
+        else if (strcmp(input_buffer, "about"))
         {
             terminal::write(
-                "NeuralKernel Experimental AI OS\n"
-            );
+                "NeuralKernel Experimental AI OS\n");
         }
 
-        else if(buffer_index > 0)
+        else if (strcmp(input_buffer, "telemetry"))
+        {
+            telemetry::print();
+        }
+
+        else if (buffer_index > 0)
         {
             terminal::write(
-                "Unknown command: "
-            );
+                "Unknown command: ");
 
             terminal::write(
-                input_buffer
-            );
+                input_buffer);
 
             terminal::putchar('\n');
         }
@@ -96,7 +98,7 @@ namespace shell
     void handle_input(char c)
     {
 
-        //enter
+        // enter
         if (c == '\n')
         {
             input_buffer[buffer_index] = '\0';
@@ -104,9 +106,10 @@ namespace shell
             return;
         }
 
-        //backspace
-        if (c=='\b'){
-            if(buffer_index > 0)
+        // backspace
+        if (c == '\b')
+        {
+            if (buffer_index > 0)
             {
                 buffer_index--;
 
@@ -116,8 +119,8 @@ namespace shell
             return;
         }
 
-        //normal chars
-        if(buffer_index < 255)
+        // normal chars
+        if (buffer_index < 255)
         {
             input_buffer[buffer_index] = c;
 

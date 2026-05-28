@@ -1,6 +1,7 @@
 #include "irq.h"
 #include "printk.h"
 #include "io.h"
+#include "telemetry.h"
 
 namespace irq
 {
@@ -10,6 +11,8 @@ namespace irq
     void timer_tick()
     {
         ticks++;
+
+        telemetry::timer_ticks++;
 
         if((ticks % 100)==0)
         {
