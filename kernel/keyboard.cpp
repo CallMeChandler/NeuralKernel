@@ -2,6 +2,7 @@
 #include "printk.h"
 #include "io.h"
 #include "terminal.h"
+#include "shell.h"
 
 namespace keyboard
 {
@@ -60,7 +61,7 @@ namespace keyboard
 
         if(c)
         {
-            terminal::putchar(c);
+            shell::handle_input(c);
         }
 
         outb(0x20,0x20);

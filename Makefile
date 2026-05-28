@@ -92,6 +92,13 @@ all:
 
 	nasm -f elf32 kernel/keyboard.asm -o keyboardasm.o
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/shell.cpp -o shell.o
+
 
 
 	x86_64-elf-g++ \
@@ -115,7 +122,8 @@ all:
 	irq.o \
 	irqasm.o \
 	keyboard.o \
-	keyboardasm.o
+	keyboardasm.o \
+	shell.o
 
 
 

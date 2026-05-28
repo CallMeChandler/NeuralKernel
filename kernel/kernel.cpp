@@ -6,6 +6,7 @@
 #include "pit.h"
 #include "irq.h"
 #include "keyboard.h"
+#include "shell.h"
 
 extern "C"
 void kernel_main()
@@ -28,6 +29,8 @@ void kernel_main()
     pit::init();
 
     keyboard::init();
+
+    shell::initialize();
 
     __asm__("sti");
 
