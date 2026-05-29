@@ -2,6 +2,7 @@
 #include "terminal.h"
 #include "printk.h"
 #include "telemetry.h"
+#include "pmm.h"
 
 namespace shell
 {
@@ -54,6 +55,9 @@ namespace shell
 
             terminal::write(
                 "telemetry\n");
+
+            terminal::write(
+                "pmm\n");
         }
 
         else if (strcmp(input_buffer, "clear"))
@@ -70,6 +74,11 @@ namespace shell
         else if (strcmp(input_buffer, "telemetry"))
         {
             telemetry::print();
+        }
+
+        else if (strcmp(input_buffer, "pmm"))
+        {
+            pmm::print_stats();
         }
 
         else if (buffer_index > 0)

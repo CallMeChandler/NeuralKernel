@@ -8,16 +8,15 @@
 #include "keyboard.h"
 #include "shell.h"
 #include "telemetry.h"
+#include "pmm.h"
 
-extern "C"
-void kernel_main()
+extern "C" void kernel_main()
 {
     terminal::initialize();
 
     printk::log(
         printk::INFO,
-        "Booting..."
-    );
+        "Booting...");
 
     gdt::init();
 
@@ -33,16 +32,23 @@ void kernel_main()
 
     telemetry::initialize();
 
+    pmm::initialize();
+
+    void *page1 =
+        pmm::alloc_page();
+
+    void *page2 =
+        pmm::alloc_page();
+
     shell::initialize();
 
     __asm__("sti");
 
     printk::log(
         printk::INFO,
-        "Interrupts enabled"
-    );
+        "Interrupts enabled");
 
-    while(1)
+    while (1)
     {
         __asm__("hlt");
     }

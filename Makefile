@@ -106,6 +106,13 @@ all:
 	-fno-rtti \
 	-c kernel/telemetry.cpp -o telemetry.o
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/pmm.cpp -o pmm.o
+
 
 
 	x86_64-elf-g++ \
@@ -131,7 +138,8 @@ all:
 	keyboard.o \
 	keyboardasm.o \
 	shell.o \
-	telemetry.o
+	telemetry.o \
+	pmm.o
 
 
 
