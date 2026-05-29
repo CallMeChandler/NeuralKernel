@@ -11,6 +11,18 @@
 #include "pmm.h"
 #include "paging.h"
 #include "heap.h"
+#include "scheduler.h"
+#include "task.h"
+
+void taskA()
+{
+    terminal::write("A");
+}
+
+void taskB()
+{
+    terminal::write("B");
+}
 
 extern "C" void kernel_main()
 {
@@ -52,6 +64,14 @@ extern "C" void kernel_main()
 
     shell::initialize();
 
+    task::initialize();
+
+    scheduler::initialize();
+
+    task::create(taskA);
+
+    task::create(taskB);
+
     __asm__("sti");
 
     printk::log(
@@ -60,6 +80,6 @@ extern "C" void kernel_main()
 
     while (1)
     {
-        __asm__("hlt");
+        scheduler::run();
     }
 }

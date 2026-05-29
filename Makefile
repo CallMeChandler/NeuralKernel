@@ -129,6 +129,20 @@ all:
 
 	x86_64-elf-g++ \
 	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/task.cpp -o task.o
+
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/scheduler.cpp -o scheduler.o
+
+	x86_64-elf-g++ \
+	-m32 \
 	-nostdlib \
 	-Wl,-m,elf_i386 \
 	-T linker.ld \
@@ -153,7 +167,9 @@ all:
 	telemetry.o \
 	pmm.o \
 	paging.o \
-	heap.o
+	heap.o \
+	task.o \
+	scheduler.o
 
 
 
