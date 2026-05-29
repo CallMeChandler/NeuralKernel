@@ -10,6 +10,7 @@
 #include "telemetry.h"
 #include "pmm.h"
 #include "paging.h"
+#include "heap.h"
 
 extern "C" void kernel_main()
 {
@@ -42,6 +43,12 @@ extern "C" void kernel_main()
 
     void *page2 =
         pmm::alloc_page();
+
+    heap::initialize();
+
+    void *a = heap::kmalloc(64);
+
+    void *b = heap::kmalloc(128);
 
     shell::initialize();
 

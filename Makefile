@@ -120,7 +120,12 @@ all:
 	-fno-rtti \
 	-c kernel/paging.cpp -o paging.o
 
-
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/heap.cpp -o heap.o
 
 	x86_64-elf-g++ \
 	-m32 \
@@ -147,7 +152,8 @@ all:
 	shell.o \
 	telemetry.o \
 	pmm.o \
-	paging.o
+	paging.o \
+	heap.o
 
 
 
