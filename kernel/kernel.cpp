@@ -9,6 +9,7 @@
 #include "shell.h"
 #include "telemetry.h"
 #include "pmm.h"
+#include "paging.h"
 
 extern "C" void kernel_main()
 {
@@ -33,6 +34,8 @@ extern "C" void kernel_main()
     telemetry::initialize();
 
     pmm::initialize();
+
+    paging::initialize();
 
     void *page1 =
         pmm::alloc_page();

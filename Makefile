@@ -113,6 +113,13 @@ all:
 	-fno-rtti \
 	-c kernel/pmm.cpp -o pmm.o
 
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/paging.cpp -o paging.o
+
 
 
 	x86_64-elf-g++ \
@@ -139,7 +146,8 @@ all:
 	keyboardasm.o \
 	shell.o \
 	telemetry.o \
-	pmm.o
+	pmm.o \
+	paging.o
 
 
 
