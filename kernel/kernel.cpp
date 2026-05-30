@@ -80,6 +80,6 @@ extern "C" void kernel_main()
 
     while (1)
     {
-        scheduler::run();
+        asm volatile("hlt");
     }
 }

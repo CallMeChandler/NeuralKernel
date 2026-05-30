@@ -2,6 +2,7 @@
 #include "printk.h"
 #include "io.h"
 #include "telemetry.h"
+#include "scheduler.h"
 
 namespace irq
 {
@@ -18,6 +19,8 @@ namespace irq
         {
             //timer is alive
         }
+
+        scheduler::run();
 
         // End Of Interrupt
         outb(
