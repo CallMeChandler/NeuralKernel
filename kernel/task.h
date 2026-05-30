@@ -11,6 +11,8 @@ namespace task
         uint32_t id;
         bool active;
         TaskFunction function;
+        uint32_t* stack;
+        uint32_t esp;
     };
 
     void initialize();
