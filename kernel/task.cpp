@@ -44,6 +44,11 @@ namespace task
         task.esp =
             (uint32_t)((uint8_t *)task.stack +
                        TASK_STACK_SIZE);
+
+        task.state = TaskState::READY;
+
+        // setup_initial_context(task);
+        
         task_count++;
 
         return task.id;
@@ -57,5 +62,15 @@ namespace task
     int get_task_count()
     {
         return task_count;
+    }
+
+    void setup_initial_context(Task &task){
+        uint32_t *stack_top = (uint32_t *)task.esp;
+
+        stack_top--;
+
+        *stack_top = (uint32_t)task.function;
+
+        task.esp = (uint32_t)stack_top;
     }
 }
