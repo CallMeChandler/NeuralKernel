@@ -1,6 +1,7 @@
 all:
 	nasm -f elf32 boot/multiboot2.asm -o multiboot.o
 	nasm -f elf32 boot/boot.asm -o boot.o
+	nasm -f elf32 kernel/context.asm -o context.o
 
 
 	x86_64-elf-g++ \
@@ -169,7 +170,8 @@ all:
 	paging.o \
 	heap.o \
 	task.o \
-	scheduler.o
+	scheduler.o \
+	context.o
 
 
 

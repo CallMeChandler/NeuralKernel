@@ -8,32 +8,32 @@ namespace irq
 {
     static volatile int ticks = 0;
 
-    extern "C"
-    void timer_tick()
+    extern "C" void timer_tick()
     {
         ticks++;
 
         telemetry::timer_ticks++;
 
-        if((ticks % 100)==0)
+        if ((ticks % 100) == 0)
         {
-            //timer is alive
+            // timer is alive
         }
 
-        scheduler::run();
+        if ((ticks % 10) == 0)
+        {
+            scheduler::tick();
+        }
 
         // End Of Interrupt
         outb(
             0x20,
-            0x20
-        );
+            0x20);
     }
 
     void init()
     {
         printk::log(
             printk::INFO,
-            "IRQ system ready"
-        );
+            "IRQ system ready");
     }
 }

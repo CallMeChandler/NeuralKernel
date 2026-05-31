@@ -47,8 +47,8 @@ namespace task
 
         task.state = TaskState::READY;
 
-        // setup_initial_context(task);
-        
+        setup_initial_context(task);
+
         task_count++;
 
         return task.id;
@@ -64,13 +64,20 @@ namespace task
         return task_count;
     }
 
-    void setup_initial_context(Task &task){
-        uint32_t *stack_top = (uint32_t *)task.esp;
+    void setup_initial_context(Task &task)
+    {
+        uint32_t *stack_top =
+            (uint32_t *)task.esp;
 
-        stack_top--;
+        *(--stack_top) =
+            (uint32_t)task.function; // RET target
 
-        *stack_top = (uint32_t)task.function;
+        *(--stack_top) = 0; // EBP
+        *(--stack_top) = 0; // EBX
+        *(--stack_top) = 0; // ESI
+        *(--stack_top) = 0; // EDI
 
-        task.esp = (uint32_t)stack_top;
+        task.esp =
+            (uint32_t)stack_top;
     }
 }

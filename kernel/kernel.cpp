@@ -13,15 +13,32 @@
 #include "heap.h"
 #include "scheduler.h"
 #include "task.h"
+#include "context.h"
 
 void taskA()
 {
-    terminal::write("A");
+    while (true)
+    {
+        terminal::write("A");
+
+        if (scheduler::should_schedule())
+        {
+            scheduler::run();
+        }
+    }
 }
 
 void taskB()
 {
-    terminal::write("B");
+    while (true)
+    {
+        terminal::write("B");
+
+        if (scheduler::should_schedule())
+        {
+            scheduler::run();
+        }
+    }
 }
 
 extern "C" void kernel_main()
@@ -69,7 +86,6 @@ extern "C" void kernel_main()
     scheduler::initialize();
 
     task::create(taskA);
-
     task::create(taskB);
 
     __asm__("sti");
@@ -77,6 +93,8 @@ extern "C" void kernel_main()
     printk::log(
         printk::INFO,
         "Interrupts enabled");
+
+    scheduler::run();
 
     while (1)
     {

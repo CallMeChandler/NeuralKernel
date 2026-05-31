@@ -6,7 +6,8 @@
 
 namespace heap
 {
-    constexpr uint32_t HEAP_START = 0x04000000; // 64 MiB
+    constexpr uint32_t HEAP_START =
+        0x00200000; // 64 MiB
 
     constexpr uint32_t HEAP_SIZE = 1024 * 1024; // 1 MiB
 
