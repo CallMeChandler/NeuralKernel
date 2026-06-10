@@ -15,7 +15,7 @@ namespace scheduler
         started = false;
     }
 
-    void run()
+    void schedule()
     {
         schedule_request = 0;
 
@@ -57,7 +57,8 @@ namespace scheduler
                 (next_task + 1) % count;
 
             if (tasks[next_task].state ==
-                task::TaskState::READY)
+                    task::TaskState::READY &&
+                next_task != 0)
             {
                 found = true;
                 break;
@@ -66,7 +67,7 @@ namespace scheduler
 
         if (!found)
         {
-            return;
+            next_task = 0;
         }
 
         current_task =
@@ -115,5 +116,10 @@ namespace scheduler
     uint32_t get_ticks()
     {
         return kernel_ticks;
+    }
+
+    void yield()
+    {
+        schedule();
     }
 }

@@ -15,29 +15,34 @@
 #include "task.h"
 #include "context.h"
 
-void idleTask()
+void idle_task()
 {
-    while(true)
+    while (true)
     {
         asm volatile("hlt");
+
+        if (scheduler::should_schedule())
+        {
+            task::yield();
+        }
     }
 }
 
-void taskA()
+void worker1()
 {
     while(true)
     {
-        terminal::write("A");
+        terminal::write("1");
 
         task::sleep(50);
     }
 }
 
-void taskB()
+void worker2()
 {
     while(true)
     {
-        terminal::write("B");
+        terminal::write("2");
 
         task::sleep(100);
     }
@@ -78,10 +83,17 @@ extern "C" void kernel_main()
     scheduler::initialize();
 
     // Task 0 = idle task
+    task::create(
+        "idle",
+        idle_task);
 
-    task::create(taskA);
+    task::create(
+        "worker1",
+        worker1);
 
-    task::create(taskB);
+    task::create(
+        "worker2",
+        worker2);
 
     __asm__("sti");
 
@@ -89,9 +101,9 @@ extern "C" void kernel_main()
         printk::INFO,
         "Interrupts enabled");
 
-    scheduler::run();
+    scheduler::schedule();
 
-    while(true)
+    while (true)
     {
         asm volatile("hlt");
     }

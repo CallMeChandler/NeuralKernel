@@ -17,17 +17,27 @@ namespace task
     struct Task
     {
         uint32_t id;
+
         bool active;
+
+        const char *name;
+
         TaskFunction function;
+
         uint32_t *stack;
+
         uint32_t esp;
+
         TaskState state;
+
         uint32_t wakeup_tick;
     };
 
     void initialize();
 
-    int create(TaskFunction function);
+    int create(
+        const char *name,
+        TaskFunction function);
 
     Task *get_tasks();
 
@@ -42,4 +52,11 @@ namespace task
     void sleep(uint32_t ticks);
 
     int current_task();
+
+    void yield();
+
+    Task *get_task(int id);
+
+    const char *state_string(
+        TaskState state);
 }

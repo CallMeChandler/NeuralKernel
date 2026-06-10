@@ -4,6 +4,8 @@
 #include "telemetry.h"
 #include "pmm.h"
 #include "heap.h"
+#include "task.h"
+#include "scheduler.h"
 
 namespace shell
 {
@@ -35,6 +37,35 @@ namespace shell
         return a[i] == b[i];
     }
 
+    static void print_number(uint32_t n)
+    {
+        if (n == 0)
+        {
+            terminal::putchar('0');
+            return;
+        }
+
+        char buffer[16];
+
+        int i = 0;
+
+        while (n > 0)
+        {
+            buffer[i++] =
+                '0' + (n % 10);
+
+            n /= 10;
+        }
+
+        for (int j = i - 1;
+             j >= 0;
+             j--)
+        {
+            terminal::putchar(
+                buffer[j]);
+        }
+    }
+
     static void execute_command()
     {
         telemetry::commands_executed++;
@@ -62,6 +93,9 @@ namespace shell
 
             terminal::write(
                 "heap\n");
+
+            terminal::write(
+                "ps\n");
         }
 
         else if (strcmp(input_buffer, "clear"))
@@ -88,6 +122,43 @@ namespace shell
         else if (strcmp(input_buffer, "heap"))
         {
             heap::print_stats();
+        }
+
+        else if (strcmp(input_buffer, "ps"))
+        {
+            terminal::write(
+                "\nID  STATE   NAME\n");
+
+            int count =
+                task::get_task_count();
+
+            terminal::write("Count: ");
+            print_number(count);
+            terminal::putchar('\n');
+
+            for (int i = 0;
+                 i < count;
+                 i++)
+            {
+                task::Task *t =
+                    task::get_task(i);
+
+                print_number(
+                    t->id);
+
+                terminal::write("   ");
+
+                terminal::write(
+                    task::state_string(
+                        t->state));
+
+                terminal::write("   ");
+
+                terminal::write(
+                    t->name);
+
+                terminal::putchar('\n');
+            }
         }
 
         else if (buffer_index > 0)

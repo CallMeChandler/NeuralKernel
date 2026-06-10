@@ -14,6 +14,27 @@ namespace task
 
     static int current_running_task = -0;
 
+    const char *state_string(
+        TaskState state)
+    {
+        switch (state)
+        {
+        case TaskState::READY:
+            return "READY";
+
+        case TaskState::RUNNING:
+            return "RUNNING";
+
+        case TaskState::SLEEPING:
+            return "SLEEP";
+
+        case TaskState::FINISHED:
+            return "DONE";
+        }
+
+        return "?";
+    }
+
     void initialize()
     {
         task_count = 0;
@@ -24,7 +45,7 @@ namespace task
         }
     }
 
-    int create(TaskFunction function)
+    int create(const char *name, TaskFunction function)
     {
         if (task_count >= MAX_TASKS)
         {
@@ -34,6 +55,7 @@ namespace task
         Task &task = tasks[task_count];
         task.id = task_count;
         task.active = true;
+        task.name = name;
         task.function = function;
         task.stack =
             (uint32_t *)heap::kmalloc(
@@ -94,7 +116,7 @@ namespace task
         tasks[current_running_task].state =
             TaskState::FINISHED;
 
-        scheduler::run();
+        scheduler::schedule();
 
         while (true)
         {
@@ -114,6 +136,22 @@ namespace task
         tasks[current_running_task].wakeup_tick =
             scheduler::get_ticks() + ticks;
 
-        scheduler::run();
+        scheduler::schedule();
+    }
+
+    void yield()
+    {
+        scheduler::yield();
+    }
+
+    Task *get_task(int id)
+    {
+        if (id < 0 ||
+            id >= task_count)
+        {
+            return nullptr;
+        }
+
+        return &tasks[id];
     }
 }
