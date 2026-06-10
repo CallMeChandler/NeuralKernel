@@ -17,18 +17,19 @@ namespace scheduler
     void run()
     {
         schedule_request = 0;
-        task::Task* tasks =
+
+        task::Task *tasks =
             task::get_tasks();
 
         int count =
             task::get_task_count();
 
-        if(count == 0)
+        if (count == 0)
         {
             return;
         }
 
-        if(!started)
+        if (!started)
         {
             started = true;
 
@@ -36,8 +37,7 @@ namespace scheduler
 
             context_switch(
                 nullptr,
-                tasks[0].esp
-            );
+                tasks[0].esp);
 
             return;
         }
@@ -50,8 +50,7 @@ namespace scheduler
 
         context_switch(
             &tasks[old_task].esp,
-            tasks[current_task].esp
-        );
+            tasks[current_task].esp);
     }
 
     void tick()

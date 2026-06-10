@@ -17,11 +17,11 @@
 
 void taskA()
 {
-    while (true)
+    while(true)
     {
         terminal::write("A");
 
-        if (scheduler::should_schedule())
+        if(scheduler::should_schedule())
         {
             scheduler::run();
         }
@@ -30,11 +30,11 @@ void taskA()
 
 void taskB()
 {
-    while (true)
+    while(true)
     {
         terminal::write("B");
 
-        if (scheduler::should_schedule())
+        if(scheduler::should_schedule())
         {
             scheduler::run();
         }

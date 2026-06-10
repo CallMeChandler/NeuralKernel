@@ -1,5 +1,6 @@
 #include "task.h"
 #include "heap.h"
+#include "scheduler.h"
 
 namespace task
 {

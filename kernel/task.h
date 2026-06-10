@@ -10,6 +10,7 @@ namespace task
     {
         READY,
         RUNNING,
+        SLEEPING,
         FINISHED
     };
 
