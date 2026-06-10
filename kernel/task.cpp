@@ -12,6 +12,8 @@ namespace task
 
     static int task_count = 0;
 
+    static int current_running_task = -0;
+
     void initialize()
     {
         task_count = 0;
@@ -80,5 +82,38 @@ namespace task
 
         task.esp =
             (uint32_t)stack_top;
+    }
+
+    void set_current_task(int id)
+    {
+        current_running_task = id;
+    }
+
+    void exit()
+    {
+        tasks[current_running_task].state =
+            TaskState::FINISHED;
+
+        scheduler::run();
+
+        while (true)
+        {
+        }
+    }
+
+    int current_task()
+    {
+        return current_running_task;
+    }
+
+    void sleep(uint32_t ticks)
+    {
+        tasks[current_running_task].state =
+            TaskState::SLEEPING;
+
+        tasks[current_running_task].wakeup_tick =
+            scheduler::get_ticks() + ticks;
+
+        scheduler::run();
     }
 }

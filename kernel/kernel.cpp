@@ -15,16 +15,21 @@
 #include "task.h"
 #include "context.h"
 
+void idleTask()
+{
+    while(true)
+    {
+        asm volatile("hlt");
+    }
+}
+
 void taskA()
 {
     while(true)
     {
         terminal::write("A");
 
-        if(scheduler::should_schedule())
-        {
-            scheduler::run();
-        }
+        task::sleep(50);
     }
 }
 
@@ -34,10 +39,7 @@ void taskB()
     {
         terminal::write("B");
 
-        if(scheduler::should_schedule())
-        {
-            scheduler::run();
-        }
+        task::sleep(100);
     }
 }
 
@@ -67,17 +69,7 @@ extern "C" void kernel_main()
 
     paging::initialize();
 
-    void *page1 =
-        pmm::alloc_page();
-
-    void *page2 =
-        pmm::alloc_page();
-
     heap::initialize();
-
-    void *a = heap::kmalloc(64);
-
-    void *b = heap::kmalloc(128);
 
     shell::initialize();
 
@@ -85,7 +77,10 @@ extern "C" void kernel_main()
 
     scheduler::initialize();
 
+    // Task 0 = idle task
+
     task::create(taskA);
+
     task::create(taskB);
 
     __asm__("sti");
@@ -96,7 +91,7 @@ extern "C" void kernel_main()
 
     scheduler::run();
 
-    while (1)
+    while(true)
     {
         asm volatile("hlt");
     }

@@ -11,4 +11,6 @@ namespace scheduler
     void tick();
 
     bool should_schedule();
+
+    uint32_t get_ticks();
 }
