@@ -144,6 +144,20 @@ all:
 
 	x86_64-elf-g++ \
 	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/syscall.cpp -o syscall.o
+
+	x86_64-elf-g++ \
+	-m32 \
+	-ffreestanding \
+	-fno-exceptions \
+	-fno-rtti \
+	-c kernel/elf.cpp -o elf.o
+
+	x86_64-elf-g++ \
+	-m32 \
 	-nostdlib \
 	-Wl,-m,elf_i386 \
 	-T linker.ld \
@@ -171,7 +185,9 @@ all:
 	heap.o \
 	task.o \
 	scheduler.o \
-	context.o
+	context.o \
+	syscall.o \
+	elf.o
 
 
 

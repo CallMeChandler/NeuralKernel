@@ -14,6 +14,7 @@
 #include "scheduler.h"
 #include "task.h"
 #include "context.h"
+#include "syscall.h"
 
 void idle_task()
 {
@@ -30,7 +31,7 @@ void idle_task()
 
 void worker1()
 {
-    while(true)
+    while (true)
     {
         terminal::write("1");
 
@@ -40,11 +41,29 @@ void worker1()
 
 void worker2()
 {
-    while(true)
+    while (true)
     {
         terminal::write("2");
 
         task::sleep(100);
+    }
+}
+
+void syscall_demo()
+{
+    while (true)
+    {
+        syscall::handle(
+            0,
+            (uint32_t)"SYS",
+            0,
+            0);
+
+        syscall::handle(
+            1,
+            100,
+            0,
+            0);
     }
 }
 
@@ -94,6 +113,10 @@ extern "C" void kernel_main()
     task::create(
         "worker2",
         worker2);
+
+    task::create(
+        "sysdemo",
+        syscall_demo);
 
     __asm__("sti");
 
