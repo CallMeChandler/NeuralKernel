@@ -17,6 +17,8 @@
 #include "syscall.h"
 #include "vfs.h"
 #include "elf.h"
+#include "auth.h"
+#include "splash.h"
 
 void idle_task()
 {
@@ -72,13 +74,15 @@ void syscall_demo()
 extern "C" uint8_t _binary_initrd_nkfs_start[];
 extern "C" uint8_t _binary_initrd_nkfs_end[];
 
-static void load_user_program()
+static void mount_initrd()
 {
     uint32_t initrd_size =
         (uint32_t)(_binary_initrd_nkfs_end - _binary_initrd_nkfs_start);
-
     vfs::init(_binary_initrd_nkfs_start, initrd_size);
+}
 
+static void load_user_program()
+{
     uint32_t elf_size = 0;
     const void *image = vfs::open("hello.elf", &elf_size);
 
@@ -119,6 +123,7 @@ static void load_user_program()
 extern "C" void kernel_main()
 {
     terminal::initialize();
+    splash::show();
 
     printk::log(
         printk::INFO,
@@ -144,7 +149,8 @@ extern "C" void kernel_main()
 
     heap::initialize();
 
-    shell::initialize();
+    mount_initrd();
+    auth::initialize();
 
     task::initialize();
 
@@ -157,17 +163,17 @@ extern "C" void kernel_main()
         "idle",
         idle_task);
 
-    task::create(
-        "worker1",
-        worker1);
+    // task::create(
+    //     "worker1",
+    //     worker1);
 
-    task::create(
-        "worker2",
-        worker2);
+    // task::create(
+    //     "worker2",
+    //     worker2);
 
-    task::create(
-        "sysdemo",
-        syscall_demo);
+    // task::create(
+    //     "sysdemo",
+    //     syscall_demo);
 
     load_user_program();
 
@@ -177,6 +183,7 @@ extern "C" void kernel_main()
         printk::INFO,
         "Interrupts enabled");
 
+    auth::login();
     scheduler::schedule();
 
     while (true)
