@@ -16,6 +16,47 @@ namespace paging
         [1024]
         __attribute__((aligned(4096)));
 
+    bool make_user_accessible(uint32_t start, uint32_t size)
+    {
+        if (size == 0)
+        {
+            return true;
+        }
+
+        uint32_t first_page = start & 0xFFFFF000;
+        uint32_t last_address = start + size - 1;
+
+        if (last_address < start)
+        {
+            return false;
+        }
+
+        uint32_t last_page = last_address & 0xFFFFF000;
+
+        for (uint32_t address = first_page;; address += 0x1000)
+        {
+            uint32_t directory_index = address >> 22;
+            uint32_t table_index = (address >> 12) & 0x3FF;
+
+            if (directory_index >= PAGE_TABLE_COUNT)
+            {
+                return false;
+            }
+
+            page_directory[directory_index] |= 0x4;
+            page_tables[directory_index][table_index] |= 0x4;
+
+            asm volatile("invlpg (%0)" : : "r"((void *)address) : "memory");
+
+            if (address == last_page)
+            {
+                break;
+            }
+        }
+
+        return true;
+    }
+
     void initialize()
     {
         // clear page directory

@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "task.h"
 #include "context.h"
+#include "gdt.h"
 
 namespace scheduler
 {
@@ -35,6 +36,9 @@ namespace scheduler
             started = true;
 
             current_task = 0;
+            task::set_current_task(current_task);
+            tasks[current_task].state = task::TaskState::RUNNING;
+            gdt::set_kernel_stack(tasks[current_task].kernel_stack_top);
 
             context_switch(
                 nullptr,
@@ -70,11 +74,16 @@ namespace scheduler
             next_task = 0;
         }
 
-        current_task =
-            next_task;
+        if (tasks[old_task].state == task::TaskState::RUNNING)
+        {
+            tasks[old_task].state = task::TaskState::READY;
+        }
 
-        task::set_current_task(
-            current_task);
+        current_task = next_task;
+        tasks[current_task].state = task::TaskState::RUNNING;
+
+        task::set_current_task(current_task);
+        gdt::set_kernel_stack(tasks[current_task].kernel_stack_top);
 
         context_switch(
             &tasks[old_task].esp,

@@ -38,6 +38,8 @@ namespace idt
 
     extern "C" void irq1();
 
+    extern "C" void syscall_entry();
+
     void init()
     {
         printk::log(
@@ -70,6 +72,12 @@ namespace idt
             (uint32_t)irq1,
             0x08,
             0x8E);
+
+        set_gate(
+            0x80,
+            (uint32_t)syscall_entry,
+            0x08,
+            0xEE);
 
         idt_ptr.limit =
             sizeof(idt) - 1;

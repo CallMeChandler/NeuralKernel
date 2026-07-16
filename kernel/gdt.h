@@ -1,6 +1,10 @@
 #pragma once
+
 #include <stdint.h>
 
-namespace gdt{
+namespace gdt
+{
     void init();
+
+    void set_kernel_stack(uint32_t stack_top);
 }

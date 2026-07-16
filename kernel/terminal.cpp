@@ -7,7 +7,7 @@
         static size_t row = 0;
         static size_t col = 0;
 
-        static uint8_t color = 0x07;
+        static uint8_t color = 0x02;
 
         static uint16_t make_entry(char c, uint8_t color)
         {

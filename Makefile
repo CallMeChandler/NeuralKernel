@@ -1,206 +1,125 @@
-all:
-	nasm -f elf32 boot/multiboot2.asm -o multiboot.o
-	nasm -f elf32 boot/boot.asm -o boot.o
-	nasm -f elf32 kernel/context.asm -o context.o
+CXX := x86_64-elf-g++
+CXXFLAGS := -m32 -ffreestanding -fno-exceptions -fno-rtti
+NASM := nasm
+LD := ld
+OBJCOPY := objcopy
 
+CPP_SOURCES := \
+	kernel/kernel.cpp \
+	kernel/terminal.cpp \
+	kernel/printk.cpp \
+	kernel/gdt.cpp \
+	kernel/idt.cpp \
+	kernel/isr.cpp \
+	kernel/pic.cpp \
+	kernel/pit.cpp \
+	kernel/irq.cpp \
+	kernel/keyboard.cpp \
+	kernel/shell.cpp \
+	kernel/telemetry.cpp \
+	kernel/pmm.cpp \
+	kernel/paging.cpp \
+	kernel/heap.cpp \
+	kernel/task.cpp \
+	kernel/scheduler.cpp \
+	kernel/syscall.cpp \
+	kernel/elf.cpp \
+	kernel/vfs.cpp
 
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/kernel.cpp -o kernel.o
+CPP_OBJECTS := $(patsubst kernel/%.cpp,%.o,$(CPP_SOURCES))
 
+ASM_SOURCES := \
+	boot/multiboot2.asm \
+	boot/boot.asm \
+	kernel/context.asm \
+	kernel/gdt.asm \
+	kernel/idt.asm \
+	kernel/irq.asm \
+	kernel/keyboard.asm \
+	kernel/syscall.asm \
+	kernel/user_mode.asm
 
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/terminal.cpp -o terminal.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/printk.cpp -o printk.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/gdt.cpp -o gdt.o
-
-
-	nasm -f elf32 kernel/gdt.asm -o gdtasm.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/idt.cpp -o idt.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/isr.cpp -o isr.o
-
-
-	nasm -f elf32 kernel/idt.asm -o idtasm.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/pic.cpp -o pic.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/pit.cpp -o pit.o
-
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/irq.cpp -o irq.o
-
-
-	nasm -f elf32 kernel/irq.asm -o irqasm.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/keyboard.cpp -o keyboard.o
-
-	nasm -f elf32 kernel/keyboard.asm -o keyboardasm.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/shell.cpp -o shell.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/telemetry.cpp -o telemetry.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/pmm.cpp -o pmm.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/paging.cpp -o paging.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/heap.cpp -o heap.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/task.cpp -o task.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/scheduler.cpp -o scheduler.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/syscall.cpp -o syscall.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-ffreestanding \
-	-fno-exceptions \
-	-fno-rtti \
-	-c kernel/elf.cpp -o elf.o
-
-	x86_64-elf-g++ \
-	-m32 \
-	-nostdlib \
-	-Wl,-m,elf_i386 \
-	-T linker.ld \
-	-o kernel.elf \
-	boot.o \
+ASM_OBJECTS := \
 	multiboot.o \
-	kernel.o \
-	terminal.o \
-	printk.o \
-	gdt.o \
-	gdtasm.o \
-	idt.o \
-	idtasm.o \
-	isr.o \
-	pic.o \
-	pit.o \
-	irq.o \
-	irqasm.o \
-	keyboard.o \
-	keyboardasm.o \
-	shell.o \
-	telemetry.o \
-	pmm.o \
-	paging.o \
-	heap.o \
-	task.o \
-	scheduler.o \
+	boot.o \
 	context.o \
-	syscall.o \
-	elf.o
+	gdtasm.o \
+	idtasm.o \
+	irqasm.o \
+	keyboardasm.o \
+	syscallasm.o \
+	user_mode.o
 
+all: kernel.elf
 
+%.o: kernel/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-iso: all
+multiboot.o: boot/multiboot2.asm
+	$(NASM) -f elf32 $< -o $@
+
+boot.o: boot/boot.asm
+	$(NASM) -f elf32 $< -o $@
+
+context.o: kernel/context.asm
+	$(NASM) -f elf32 $< -o $@
+
+gdtasm.o: kernel/gdt.asm
+	$(NASM) -f elf32 $< -o $@
+
+idtasm.o: kernel/idt.asm
+	$(NASM) -f elf32 $< -o $@
+
+irqasm.o: kernel/irq.asm
+	$(NASM) -f elf32 $< -o $@
+
+keyboardasm.o: kernel/keyboard.asm
+	$(NASM) -f elf32 $< -o $@
+
+syscallasm.o: kernel/syscall.asm
+	$(NASM) -f elf32 $< -o $@
+
+user_mode.o: kernel/user_mode.asm
+	$(NASM) -f elf32 $< -o $@
+
+user/hello.o: user/hello.asm
+	$(NASM) -f elf32 $< -o $@
+
+user/hello.elf: user/hello.o user/linker.ld
+	$(LD) -m elf_i386 -T user/linker.ld -o $@ user/hello.o
+
+tools/mkinitrd: tools/mkinitrd.c
+	gcc -O2 -Wall -Wextra $< -o $@
+
+initrd/initrd.nkfs: tools/mkinitrd user/hello.elf
+	mkdir -p initrd
+	tools/mkinitrd $@ user/hello.elf hello.elf
+
+initrd/initrd_bin.o: initrd/initrd.nkfs
+	cd initrd && $(OBJCOPY) -I binary -O elf32-i386 -B i386 initrd.nkfs initrd_bin.o
+
+kernel.elf: $(CPP_OBJECTS) $(ASM_OBJECTS) initrd/initrd_bin.o linker.ld
+	$(CXX) \
+		-m32 \
+		-nostdlib \
+		-Wl,-m,elf_i386 \
+		-T linker.ld \
+		-o $@ \
+		$(ASM_OBJECTS) \
+		$(CPP_OBJECTS) \
+		initrd/initrd_bin.o
+
+iso: kernel.elf
 	mkdir -p iso/boot/grub
 	cp kernel.elf iso/boot/kernel.elf
 	cp grub.cfg iso/boot/grub/grub.cfg
 	grub-mkrescue -o neuralkernel.iso iso
 
-
 run: iso
 	qemu-system-x86_64 -cdrom neuralkernel.iso
 
-
 clean:
 	rm -rf *.o kernel.elf neuralkernel.iso iso
+	rm -f user/hello.o user/hello.elf
+	rm -f initrd/initrd.nkfs initrd/initrd_bin.o
+	rm -f tools/mkinitrd

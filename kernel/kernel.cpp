@@ -15,6 +15,8 @@
 #include "task.h"
 #include "context.h"
 #include "syscall.h"
+#include "vfs.h"
+#include "elf.h"
 
 void idle_task()
 {
@@ -67,6 +69,53 @@ void syscall_demo()
     }
 }
 
+extern "C" uint8_t _binary_initrd_nkfs_start[];
+extern "C" uint8_t _binary_initrd_nkfs_end[];
+
+static void load_user_program()
+{
+    uint32_t initrd_size =
+        (uint32_t)(_binary_initrd_nkfs_end - _binary_initrd_nkfs_start);
+
+    vfs::init(_binary_initrd_nkfs_start, initrd_size);
+
+    uint32_t elf_size = 0;
+    const void *image = vfs::open("hello.elf", &elf_size);
+
+    if (image == nullptr)
+    {
+        printk::log(printk::ERROR, "hello.elf not found");
+        return;
+    }
+
+    uint32_t entry = 0;
+
+    if (!elf::load(image, elf_size, &entry))
+    {
+        printk::log(printk::ERROR, "ELF load failed");
+        return;
+    }
+
+    void *user_stack = pmm::alloc_page();
+
+    if (user_stack == nullptr ||
+        !paging::make_user_accessible((uint32_t)user_stack, 4096))
+    {
+        printk::log(printk::ERROR, "User stack allocation failed");
+        return;
+    }
+
+    uint32_t user_stack_top = (uint32_t)user_stack + 4096;
+
+    if (task::create_user("hello.elf", entry, user_stack_top) < 0)
+    {
+        printk::log(printk::ERROR, "User task creation failed");
+        return;
+    }
+
+    printk::log(printk::INFO, "ELF user task loaded");
+}
+
 extern "C" void kernel_main()
 {
     terminal::initialize();
@@ -101,6 +150,8 @@ extern "C" void kernel_main()
 
     scheduler::initialize();
 
+    syscall::initialize();
+
     // Task 0 = idle task
     task::create(
         "idle",
@@ -117,6 +168,8 @@ extern "C" void kernel_main()
     task::create(
         "sysdemo",
         syscall_demo);
+
+    load_user_program();
 
     __asm__("sti");
 
