@@ -24,7 +24,10 @@ CPP_SOURCES := \
 	kernel/scheduler.cpp \
 	kernel/syscall.cpp \
 	kernel/elf.cpp \
-	kernel/vfs.cpp
+	kernel/vfs.cpp \
+	kernel/splash.cpp \
+	kernel/auth.cpp \
+	kernel/editor.cpp
 
 CPP_OBJECTS := $(patsubst kernel/%.cpp,%.o,$(CPP_SOURCES))
 
@@ -91,9 +94,10 @@ user/hello.elf: user/hello.o user/linker.ld
 tools/mkinitrd: tools/mkinitrd.c
 	gcc -O2 -Wall -Wextra $< -o $@
 
-initrd/initrd.nkfs: tools/mkinitrd user/hello.elf
-	mkdir -p initrd
-	tools/mkinitrd $@ user/hello.elf hello.elf
+initrd/initrd.nkfs: tools/mkinitrd user/hello.elf $(wildcard nkfs_files/*)
+	mkdir -p initrd nkfs_files
+	cp user/hello.elf nkfs_files/hello.elf
+	tools/mkinitrd $@ nkfs_files
 
 initrd/initrd_bin.o: initrd/initrd.nkfs
 	cd initrd && $(OBJCOPY) -I binary -O elf32-i386 -B i386 initrd.nkfs initrd_bin.o
@@ -120,6 +124,6 @@ run: iso
 
 clean:
 	rm -rf *.o kernel.elf neuralkernel.iso iso
-	rm -f user/hello.o user/hello.elf
+	rm -f user/hello.o user/hello.elf nkfs_files/hello.elf
 	rm -f initrd/initrd.nkfs initrd/initrd_bin.o
 	rm -f tools/mkinitrd

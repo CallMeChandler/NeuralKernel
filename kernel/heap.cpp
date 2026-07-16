@@ -1,96 +1,101 @@
 #include "heap.h"
-
 #include "terminal.h"
-
 #include <stdint.h>
 
 namespace heap
 {
-    constexpr uint32_t HEAP_START =
-        0x00200000; // 64 MiB
+    constexpr uint32_t HEAP_START = 0x00200000;
+    constexpr uint32_t HEAP_SIZE = 1024 * 1024;
 
-    constexpr uint32_t HEAP_SIZE = 1024 * 1024; // 1 MiB
+    struct Block
+    {
+        uint32_t size;
+        bool free;
+        Block* next;
+    };
 
-    static uint32_t heap_current = HEAP_START;
-
-    static uint32_t heap_end = HEAP_START + HEAP_SIZE;
-
-    static uint32_t total_allocated = 0;
+    static Block* head = nullptr;
+    static uint32_t used_bytes = 0;
 
     static void print_number(uint32_t n)
     {
-        if (n == 0)
-        {
-            terminal::putchar('0');
-            return;
-        }
-
-        char buffer[16];
-
-        int i = 0;
-
-        while (n > 0)
-        {
-            buffer[i] =
-                '0' + (n % 10);
-
-            n /= 10;
-
-            i++;
-        }
-
-        for (int j = i - 1; j >= 0; j--)
-        {
-            terminal::putchar(
-                buffer[j]);
-        }
+        if (n == 0) { terminal::putchar('0'); return; }
+        char buffer[16]; int i = 0;
+        while (n) { buffer[i++] = '0' + (n % 10); n /= 10; }
+        while (i--) terminal::putchar(buffer[i]);
     }
 
     void initialize()
     {
-        heap_current = HEAP_START;
-
-        total_allocated = 0;
+        head = (Block*)HEAP_START;
+        head->size = HEAP_SIZE - sizeof(Block);
+        head->free = true;
+        head->next = nullptr;
+        used_bytes = 0;
     }
 
-    void *kmalloc(size_t size)
+    void* kmalloc(size_t requested)
     {
-        // allign to 8 bytes
+        if (!requested || !head) return nullptr;
+        uint32_t size = ((uint32_t)requested + 7) & ~7U;
 
-        size = (size + 7) & ~7;
-
-        if (heap_current + size >= heap_end)
+        for (Block* block = head; block; block = block->next)
         {
-            return nullptr; // Out of memory
+            if (!block->free || block->size < size) continue;
+
+            if (block->size >= size + sizeof(Block) + 8)
+            {
+                Block* split = (Block*)((uint8_t*)(block + 1) + size);
+                split->size = block->size - size - sizeof(Block);
+                split->free = true;
+                split->next = block->next;
+                block->next = split;
+                block->size = size;
+            }
+
+            block->free = false;
+            used_bytes += block->size;
+            return block + 1;
         }
+        return nullptr;
+    }
 
-        void *address = (void *)heap_current;
+    void kfree(void* pointer)
+    {
+        if (!pointer) return;
+        Block* block = ((Block*)pointer) - 1;
+        if (block->free) return;
 
-        heap_current += size;
-        total_allocated += size;
+        block->free = true;
+        if (used_bytes >= block->size) used_bytes -= block->size;
 
-        return address;
+        for (Block* current = head; current && current->next; )
+        {
+            if (current->free && current->next->free)
+            {
+                current->size += sizeof(Block) + current->next->size;
+                current->next = current->next->next;
+            }
+            else current = current->next;
+        }
+    }
+
+    uint32_t allocated_bytes() { return used_bytes; }
+
+    uint32_t free_bytes()
+    {
+        uint32_t total = 0;
+        for (Block* block = head; block; block = block->next)
+            if (block->free) total += block->size;
+        return total;
     }
 
     void print_stats()
     {
-        terminal::write(
-            "Heap Stats:\n");
-
-        terminal::write(
-            "Allocated bytes: ");
-
-        print_number(
-            total_allocated);
-
-        terminal::putchar('\n');
-
-        terminal::write(
-            "Remaining bytes: ");
-
-        print_number(
-            heap_end - heap_current);
-
+        terminal::write("Heap Stats:\nAllocated bytes: ");
+        print_number(allocated_bytes());
+        terminal::write("\nFree bytes: ");
+        print_number(free_bytes());
         terminal::putchar('\n');
     }
 }

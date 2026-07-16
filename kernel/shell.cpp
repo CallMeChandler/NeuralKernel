@@ -1,222 +1,36 @@
 #include "shell.h"
 #include "terminal.h"
-#include "printk.h"
 #include "telemetry.h"
 #include "pmm.h"
 #include "heap.h"
 #include "task.h"
 #include "scheduler.h"
-
-namespace shell
-{
-    static char input_buffer[256];
-
-    static int buffer_index = 0;
-
-    static void print_prompt()
-    {
-        terminal::write("NeuralKernel> ");
-    }
-
-    static bool strcmp(
-        const char *a,
-        const char *b)
-    {
-        int i = 0;
-
-        while (a[i] && b[i])
-        {
-            if (a[i] != b[i])
-            {
-                return false;
-            }
-
-            i++;
-        }
-
-        return a[i] == b[i];
-    }
-
-    static void print_number(uint32_t n)
-    {
-        if (n == 0)
-        {
-            terminal::putchar('0');
-            return;
-        }
-
-        char buffer[16];
-
-        int i = 0;
-
-        while (n > 0)
-        {
-            buffer[i++] =
-                '0' + (n % 10);
-
-            n /= 10;
-        }
-
-        for (int j = i - 1;
-             j >= 0;
-             j--)
-        {
-            terminal::putchar(
-                buffer[j]);
-        }
-    }
-
-    static void execute_command()
-    {
-        telemetry::commands_executed++;
-        terminal::putchar('\n');
-
-        if (strcmp(input_buffer, "help"))
-        {
-            terminal::write(
-                "Commands:\n");
-
-            terminal::write(
-                "help\n");
-
-            terminal::write(
-                "clear\n");
-
-            terminal::write(
-                "about\n");
-
-            terminal::write(
-                "telemetry\n");
-
-            terminal::write(
-                "pmm\n");
-
-            terminal::write(
-                "heap\n");
-
-            terminal::write(
-                "ps\n");
-        }
-
-        else if (strcmp(input_buffer, "clear"))
-        {
-            terminal::clear();
-        }
-
-        else if (strcmp(input_buffer, "about"))
-        {
-            terminal::write(
-                "NeuralKernel Experimental AI OS\n");
-        }
-
-        else if (strcmp(input_buffer, "telemetry"))
-        {
-            telemetry::print();
-        }
-
-        else if (strcmp(input_buffer, "pmm"))
-        {
-            pmm::print_stats();
-        }
-
-        else if (strcmp(input_buffer, "heap"))
-        {
-            heap::print_stats();
-        }
-
-        else if (strcmp(input_buffer, "ps"))
-        {
-            terminal::write(
-                "\nID  STATE   NAME\n");
-
-            int count =
-                task::get_task_count();
-
-            terminal::write("Count: ");
-            print_number(count);
-            terminal::putchar('\n');
-
-            for (int i = 0;
-                 i < count;
-                 i++)
-            {
-                task::Task *t =
-                    task::get_task(i);
-
-                print_number(
-                    t->id);
-
-                terminal::write("   ");
-
-                terminal::write(
-                    task::state_string(
-                        t->state));
-
-                terminal::write("   ");
-
-                terminal::write(
-                    t->name);
-
-                terminal::putchar('\n');
-            }
-        }
-
-        else if (buffer_index > 0)
-        {
-            terminal::write(
-                "Unknown command: ");
-
-            terminal::write(
-                input_buffer);
-
-            terminal::putchar('\n');
-        }
-
-        buffer_index = 0;
-
-        input_buffer[0] = '\0';
-
-        print_prompt();
-    }
-
-    void initialize()
-    {
-        print_prompt();
-    }
-
-    void handle_input(char c)
-    {
-
-        // enter
-        if (c == '\n')
-        {
-            input_buffer[buffer_index] = '\0';
-            execute_command();
-            return;
-        }
-
-        // backspace
-        if (c == '\b')
-        {
-            if (buffer_index > 0)
-            {
-                buffer_index--;
-
-                terminal::putchar('\b');
-            }
-
-            return;
-        }
-
-        // normal chars
-        if (buffer_index < 255)
-        {
-            input_buffer[buffer_index] = c;
-
-            buffer_index++;
-
-            terminal::putchar(c);
-        }
-    }
-
+#include "vfs.h"
+#include "auth.h"
+#include "editor.h"
+#include "io.h"
+namespace shell {
+static char buf[256]; static int n=0;
+static bool eq(const char*a,const char*b){int i=0;while(a[i]&&b[i]){if(a[i]!=b[i])return false;i++;}return a[i]==b[i];}
+static bool starts(const char*a,const char*b){int i=0;while(b[i]){if(a[i]!=b[i])return false;i++;}return true;}
+static void num(uint32_t x){if(!x){terminal::putchar('0');return;}char b[16];int i=0;while(x){b[i++]='0'+x%10;x/=10;}while(i--)terminal::putchar(b[i]);}
+static void prompt(){terminal::set_color(terminal::LIGHT_CYAN);terminal::write("NeuralKernel> ");terminal::set_color(terminal::LIGHT_GREY);}
+void initialize(){n=0;buf[0]=0;prompt();}
+static void command(){telemetry::commands_executed++;terminal::putchar('\n');
+if(eq(buf,"help"))terminal::write("help clear about telemetry pmm heap ps ls whoami uptime meminfo uname echo cat write rm edit exit reboot\n");
+else if(eq(buf,"clear"))terminal::clear(); else if(eq(buf,"about"))terminal::write("NeuralKernel Experimental AI OS\n");
+else if(eq(buf,"telemetry"))telemetry::print(); else if(eq(buf,"pmm"))pmm::print_stats(); else if(eq(buf,"heap"))heap::print_stats();
+else if(eq(buf,"ls"))vfs::list(); else if(eq(buf,"whoami")){terminal::write(auth::username());terminal::putchar('\n');}
+else if(eq(buf,"uptime")){uint32_t t=telemetry::timer_ticks;num(t/100);terminal::write(" seconds (ticks: ");num(t);terminal::write(")\n");}
+else if(eq(buf,"meminfo")){terminal::write("Memory information\n  PMM used pages: ");num(pmm::used_pages_count());terminal::write("\n  PMM free pages: ");num(pmm::free_pages_count());terminal::write("\n  Heap allocated: ");num(heap::allocated_bytes());terminal::write(" bytes\n  Heap free: ");num(heap::free_bytes());terminal::write(" bytes\n");}
+else if(eq(buf,"uname"))terminal::write("NeuralKernel v0.1 i386\n"); else if(starts(buf,"echo ")){terminal::write(buf+5);terminal::putchar('\n');}
+else if(starts(buf,"cat ")){const char*f=buf+4;if(!vfs::valid_nkfs_name(f)){terminal::write("Warning: cat accepts .nkfs files only.\n");}else{uint32_t s;auto*d=(const char*)vfs::open(f,&s);if(!d)terminal::write("File not found.\n");else{for(uint32_t i=0;i<s;i++)terminal::putchar(d[i]);if(!s||d[s-1]!='\n')terminal::putchar('\n');}}}
+else if(starts(buf,"write ")){char*f=buf+6;char*sp=f;while(*sp&&*sp!=' ')sp++;if(!*sp)terminal::write("Usage: write file.nkfs text\n");else{*sp++=0;if(*sp=='\"'){sp++;int l=0;while(sp[l]&&sp[l]!='\"')l++;sp[l]=0;}int l=0;while(sp[l])l++;terminal::write(vfs::write(f,sp,l)?"Written.\n":"Write failed. Use a .nkfs filename.\n");}}
+else if(starts(buf,"rm "))terminal::write(vfs::remove(buf+3)?"Removed.\n":"Remove failed. Use a .nkfs filename.\n");
+else if(starts(buf,"edit ")){if(editor::open(buf+5)){n=0;return;}}
+else if(eq(buf,"exit")){n=0;auth::logout();return;} else if(eq(buf,"reboot")){terminal::write("Rebooting...\n");outb(0x64,0xFE);for(;;)asm volatile("hlt");}
+else if(eq(buf,"ps")){terminal::write("ID STATE NAME\n");for(int i=0;i<task::get_task_count();i++){auto*t=task::get_task(i);if(!t||!t->active)continue;num(t->id);terminal::write(" ");terminal::write(task::state_string(t->state));terminal::write(" ");terminal::write(t->name);terminal::putchar('\n');}}
+else if(n) {terminal::write("Unknown command: ");terminal::write(buf);terminal::putchar('\n');}
+n=0;buf[0]=0;prompt();}
+void handle_input(char c){if(c=='\n'){buf[n]=0;command();return;}if(c=='\b'){if(n){n--;terminal::putchar('\b');}return;}if(n<255){buf[n++]=c;terminal::putchar(c);}}
 }
