@@ -66,13 +66,12 @@ namespace task
         uint32_t user_entry,
         uint32_t user_stack_top)
     {
-        if (task_count >= MAX_TASKS)
-        {
-            return -1;
-        }
+        int slot = -1;
+        for (int i = 0; i < MAX_TASKS; i++) if (!tasks[i].active) { slot = i; break; }
+        if (slot < 0) return -1;
 
-        Task &new_task = tasks[task_count];
-        new_task.id = task_count;
+        Task &new_task = tasks[slot];
+        new_task.id = slot;
         new_task.active = true;
         new_task.name = name;
         new_task.function = function;
@@ -95,7 +94,7 @@ namespace task
         new_task.user_stack_top = user_stack_top;
 
         setup_initial_context(new_task);
-        task_count++;
+        if (slot >= task_count) task_count = slot + 1;
 
         return new_task.id;
     }

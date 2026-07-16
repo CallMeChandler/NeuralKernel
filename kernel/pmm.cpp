@@ -87,6 +87,19 @@ namespace pmm
         }
     }
 
+
+    uint32_t used_pages_count()
+    {
+        uint32_t used = 0;
+        for (uint32_t i = 0; i < TOTAL_PAGES; i++) if (used_pages[i]) used++;
+        return used;
+    }
+
+    uint32_t free_pages_count()
+    {
+        return TOTAL_PAGES - used_pages_count();
+    }
+
     void print_stats()
     {
         uint32_t used = 0;

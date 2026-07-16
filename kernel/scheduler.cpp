@@ -2,6 +2,7 @@
 #include "task.h"
 #include "context.h"
 #include "gdt.h"
+#include "heap.h"
 
 namespace scheduler
 {
@@ -9,6 +10,8 @@ namespace scheduler
     static bool started = false;
     static volatile int schedule_request = 0;
     static uint32_t kernel_ticks = 0;
+    static void* deferred_stack = nullptr;
+    static int deferred_slot = -1;
 
     void initialize()
     {
@@ -18,6 +21,7 @@ namespace scheduler
 
     void schedule()
     {
+        if (deferred_stack) { heap::kfree(deferred_stack); if (deferred_slot >= 0) task::get_tasks()[deferred_slot].active = false; deferred_stack = nullptr; deferred_slot = -1; }
         schedule_request = 0;
 
         task::Task *tasks =
@@ -60,7 +64,7 @@ namespace scheduler
             next_task =
                 (next_task + 1) % count;
 
-            if (tasks[next_task].state ==
+            if (tasks[next_task].active && tasks[next_task].state ==
                     task::TaskState::READY &&
                 next_task != 0)
             {
@@ -84,6 +88,8 @@ namespace scheduler
 
         task::set_current_task(current_task);
         gdt::set_kernel_stack(tasks[current_task].kernel_stack_top);
+
+        if (tasks[old_task].state == task::TaskState::FINISHED && old_task != 0) { deferred_stack = tasks[old_task].stack; deferred_slot = old_task; tasks[old_task].stack = nullptr; }
 
         context_switch(
             &tasks[old_task].esp,
