@@ -1,5 +1,5 @@
 CXX := x86_64-elf-g++
-CXXFLAGS := -m32 -ffreestanding -fno-exceptions -fno-rtti
+CXXFLAGS := -m32 -ffreestanding -fno-exceptions -fno-rtti -fno-pie -fno-pic -fno-stack-protector -fno-threadsafe-statics -fno-use-cxa-atexit -mno-sse -mno-sse2 -mno-mmx
 NASM := nasm
 LD := ld
 OBJCOPY := objcopy
@@ -27,7 +27,11 @@ CPP_SOURCES := \
 	kernel/vfs.cpp \
 	kernel/splash.cpp \
 	kernel/auth.cpp \
-	kernel/editor.cpp
+	kernel/editor.cpp \
+	kernel/nn.cpp \
+	kernel/nn_pmm.cpp \
+	kernel/nn_scheduler.cpp \
+	kernel/watchdog.cpp
 
 CPP_OBJECTS := $(patsubst kernel/%.cpp,%.o,$(CPP_SOURCES))
 
@@ -106,12 +110,14 @@ kernel.elf: $(CPP_OBJECTS) $(ASM_OBJECTS) initrd/initrd_bin.o linker.ld
 	$(CXX) \
 		-m32 \
 		-nostdlib \
+		-no-pie \
 		-Wl,-m,elf_i386 \
 		-T linker.ld \
 		-o $@ \
 		$(ASM_OBJECTS) \
 		$(CPP_OBJECTS) \
 		initrd/initrd_bin.o
+	@if command -v grub-file >/dev/null 2>&1; then grub-file --is-x86-multiboot2 $@ || { echo "ERROR: invalid Multiboot2 kernel"; rm -f $@; exit 1; }; fi
 
 iso: kernel.elf
 	mkdir -p iso/boot/grub
@@ -121,6 +127,9 @@ iso: kernel.elf
 
 run: iso
 	qemu-system-x86_64 -cdrom neuralkernel.iso
+
+debug: iso
+	qemu-system-x86_64 -cdrom neuralkernel.iso -no-reboot -no-shutdown -d int,cpu_reset,guest_errors -D qemu.log
 
 clean:
 	rm -rf *.o kernel.elf neuralkernel.iso iso

@@ -1,6 +1,7 @@
 #include "task.h"
 #include "heap.h"
 #include "scheduler.h"
+#include "nn_scheduler.h"
 
 namespace task
 {
@@ -94,6 +95,7 @@ namespace task
         new_task.user_stack_top = user_stack_top;
 
         setup_initial_context(new_task);
+        nn_scheduler::register_task(slot);
         if (slot >= task_count) task_count = slot + 1;
 
         return new_task.id;
@@ -168,6 +170,7 @@ namespace task
 
     void sleep(uint32_t ticks)
     {
+        nn_scheduler::record_sleep(current_running_task);
         tasks[current_running_task].state = TaskState::SLEEPING;
         tasks[current_running_task].wakeup_tick =
             scheduler::get_ticks() + ticks;

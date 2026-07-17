@@ -19,6 +19,8 @@
 #include "elf.h"
 #include "auth.h"
 #include "splash.h"
+#include "nn_scheduler.h"
+#include "watchdog.h"
 
 void idle_task()
 {
@@ -26,10 +28,29 @@ void idle_task()
     {
         asm volatile("hlt");
 
+        watchdog::poll();
+
         if (scheduler::should_schedule())
         {
             task::yield();
         }
+    }
+}
+
+void neural_interactive_demo()
+{
+    while (true)
+        task::sleep(20);
+}
+
+void neural_cpu_demo()
+{
+    volatile uint32_t accumulator = 0;
+    while (true)
+    {
+        for (uint32_t i = 0; i < 20000; i++)
+            accumulator = accumulator * 33U + i;
+        task::yield();
     }
 }
 
@@ -154,7 +175,9 @@ extern "C" void kernel_main()
 
     task::initialize();
 
+    nn_scheduler::initialize();
     scheduler::initialize();
+    watchdog::initialize();
 
     syscall::initialize();
 
@@ -163,17 +186,10 @@ extern "C" void kernel_main()
         "idle",
         idle_task);
 
-    // task::create(
-    //     "worker1",
-    //     worker1);
-
-    // task::create(
-    //     "worker2",
-    //     worker2);
-
-    // task::create(
-    //     "sysdemo",
-    //     syscall_demo);
+    // Silent demo workloads: no shell pollution, but enough behavior for
+    // the neural classifier and watchdog to observe after login.
+    task::create("interactive", neural_interactive_demo);
+    task::create("cpu-demo", neural_cpu_demo);
 
     load_user_program();
 

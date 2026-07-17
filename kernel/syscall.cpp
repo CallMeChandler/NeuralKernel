@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "terminal.h"
 #include "task.h"
+#include "nn_scheduler.h"
 
 namespace syscall
 {
@@ -14,6 +15,7 @@ namespace syscall
         uint32_t arg2,
         uint32_t arg3)
     {
+        nn_scheduler::record_syscall(task::current_task());
         (void)arg2;
         (void)arg3;
 
