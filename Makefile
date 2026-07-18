@@ -31,7 +31,9 @@ CPP_SOURCES := \
 	kernel/nn.cpp \
 	kernel/nn_pmm.cpp \
 	kernel/nn_scheduler.cpp \
-	kernel/watchdog.cpp
+	kernel/watchdog.cpp \
+	kernel/nlp.cpp \
+	kernel/neural_chat.cpp
 
 CPP_OBJECTS := $(patsubst kernel/%.cpp,%.o,$(CPP_SOURCES))
 

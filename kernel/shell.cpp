@@ -11,6 +11,7 @@
 #include "io.h"
 #include "nn_scheduler.h"
 #include "watchdog.h"
+#include "neural_chat.h"
 
 namespace shell
 {
@@ -60,7 +61,7 @@ namespace shell
     static void prompt()
     {
         terminal::set_color(terminal::LIGHT_CYAN);
-        terminal::write("NeuralKernel> ");
+        terminal::write(neural_chat::active() ? "NK-AI> " : "NeuralKernel> ");
         terminal::set_color(terminal::LIGHT_GREY);
     }
 
@@ -76,8 +77,17 @@ namespace shell
         telemetry::commands_executed++;
         terminal::putchar('\n');
 
+        if (neural_chat::active())
+        {
+            neural_chat::handle_line(buffer);
+            length = 0;
+            buffer[0] = 0;
+            prompt();
+            return;
+        }
+
         if (equals(buffer, "help"))
-            terminal::write("help clear about telemetry pmm heap ps neuralstats neural-on neural-off ls whoami uptime meminfo uname echo cat write rm edit exit reboot\n");
+            terminal::write("help clear about telemetry pmm heap ps neural neuralstats neural-on neural-off ls whoami uptime meminfo uname echo cat write rm edit exit reboot\n");
         else if (equals(buffer, "clear")) terminal::clear();
         else if (equals(buffer, "about")) terminal::write("NeuralKernel Experimental AI OS\n");
         else if (equals(buffer, "telemetry")) telemetry::print();
@@ -154,6 +164,8 @@ namespace shell
         {
             if (editor::open(buffer + 5)) { length = 0; return; }
         }
+        else if (equals(buffer, "neural"))
+            neural_chat::enter();
         else if (equals(buffer, "neural-on"))
         {
             nn_scheduler::set_enabled(true);
