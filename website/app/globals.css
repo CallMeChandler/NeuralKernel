@@ -11,7 +11,13 @@
   --accent-two: #7ce7ff;
   --danger: #ff6f91;
   --warning: #ffd76f;
-  --mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", Menlo, monospace;
+  --mono:
+    "SFMono-Regular",
+    "Cascadia Code",
+    "Liberation Mono",
+    "DejaVu Sans Mono",
+    Menlo,
+    monospace;
 }
 
 * {
@@ -27,10 +33,21 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    radial-gradient(circle at 18% 8%, rgba(52, 255, 168, 0.075), transparent 24rem),
-    radial-gradient(circle at 88% 26%, rgba(70, 182, 255, 0.08), transparent 28rem),
+    radial-gradient(circle at 18% 8%,
+      rgba(52, 255, 168, 0.075),
+      transparent 24rem),
+    radial-gradient(circle at 88% 26%,
+      rgba(70, 182, 255, 0.08),
+      transparent 28rem),
     linear-gradient(180deg, #05070a 0%, #070b10 46%, #040608 100%);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 a {
@@ -52,7 +69,8 @@ button {
   inset: 0;
   z-index: 80;
   opacity: 0.1;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px);
   background-size: 100% 4px;
   mix-blend-mode: overlay;
 }
@@ -78,6 +96,8 @@ button {
   background: var(--accent-two);
 }
 
+/* ---------------- Header ---------------- */
+
 .topbar {
   position: sticky;
   top: 0;
@@ -89,7 +109,7 @@ button {
 
 .topbar-inner {
   max-width: 1240px;
-  min-height: 76px;
+  min-height: 72px;
   margin: auto;
   padding: 0 24px;
   display: grid;
@@ -101,35 +121,74 @@ button {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  text-decoration: none;
+  gap: 11px;
   width: fit-content;
+  min-width: 0;
+  flex-shrink: 0;
+  color: inherit;
+  text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--line-strong);
-  background: rgba(117, 255, 188, 0.05);
-  color: var(--accent);
-  font: 700 13px var(--mono);
-  clip-path: polygon(0 0, 82% 0, 100% 18%, 100% 100%, 18% 100%, 0 82%);
+.brand-icon-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid rgba(72, 239, 218, 0.2);
+  border-radius: 10px;
+  background: #030a10;
+  box-shadow:
+    inset 0 0 14px rgba(49, 238, 220, 0.035),
+    0 0 14px rgba(38, 224, 213, 0.08);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.brand strong {
-  display: block;
-  font-size: 14px;
-  letter-spacing: 0.06em;
+.brand-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 8px;
+  image-rendering: auto;
+  filter: none;
 }
 
-.brand small {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-  font: 10px var(--mono);
-  letter-spacing: 0.08em;
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.brand-copy strong {
+  color: #edfaff;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.brand-copy strong span {
+  color: #2ce8dc;
+}
+
+.brand-copy small {
+  color: rgba(174, 202, 211, 0.52);
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brand:hover .brand-icon-wrap {
+  border-color: rgba(72, 239, 218, 0.38);
+  box-shadow:
+    inset 0 0 18px rgba(49, 238, 220, 0.06),
+    0 0 22px rgba(38, 224, 213, 0.12);
 }
 
 .tab-nav {
@@ -137,8 +196,8 @@ button {
   gap: 4px;
   padding: 4px;
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.025);
   border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .tab-link {
@@ -149,9 +208,9 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  text-decoration: none;
   color: var(--muted);
   font-size: 13px;
+  text-decoration: none;
 }
 
 .tab-link small {
@@ -180,6 +239,8 @@ button {
 .github-link:hover {
   color: var(--accent);
 }
+
+/* ---------------- General layout ---------------- */
 
 .site-shell {
   max-width: 1240px;
@@ -212,12 +273,12 @@ button {
 }
 
 .hero-copy h1 {
-  margin: 18px 0;
   max-width: 830px;
+  margin: 18px 0;
   font-size: clamp(44px, 6vw, 78px);
+  font-weight: 600;
   line-height: 0.96;
   letter-spacing: -0.055em;
-  font-weight: 600;
 }
 
 .hero-copy h1 span {
@@ -249,17 +310,25 @@ button {
   letter-spacing: 0.08em;
 }
 
+/* ---------------- Cards ---------------- */
+
 .system-card,
 .setup-card,
 .command-card {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(17, 24, 32, 0.9), rgba(8, 12, 17, 0.92));
+  background: linear-gradient(180deg,
+      rgba(17, 24, 32, 0.9),
+      rgba(8, 12, 17, 0.92));
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.025);
 }
 
 .system-card {
   padding: 20px;
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+  clip-path: polygon(0 0,
+      calc(100% - 18px) 0,
+      100% 18px,
+      100% 100%,
+      0 100%);
 }
 
 .system-card-head {
@@ -267,8 +336,8 @@ button {
   justify-content: space-between;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
-  font: 10px var(--mono);
   color: var(--accent);
+  font: 10px var(--mono);
 }
 
 .system-card-head small {
@@ -300,8 +369,8 @@ button {
 .credential-block {
   margin-top: 18px;
   padding: 14px;
-  background: rgba(117, 255, 188, 0.055);
   border-left: 2px solid var(--accent);
+  background: rgba(117, 255, 188, 0.055);
 }
 
 .credential-block small {
@@ -318,7 +387,10 @@ button {
   font: 14px var(--mono);
 }
 
+/* ---------------- Emulator ---------------- */
+
 .emulator-panel {
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
   background: #06090c;
   box-shadow: 0 24px 90px rgba(0, 0, 0, 0.42);
@@ -382,10 +454,10 @@ button {
 
 .toolbar-actions button,
 .screen-placeholder button {
+  padding: 9px 13px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.035);
   color: var(--text);
-  padding: 9px 13px;
   font: 10px var(--mono);
   letter-spacing: 0.08em;
 }
@@ -406,8 +478,8 @@ button {
   min-height: 570px;
   display: grid;
   place-items: center;
+  overflow: auto;
   outline: none;
-  overflow: hidden;
   background: #000;
 }
 
@@ -415,8 +487,8 @@ button {
   content: "";
   position: absolute;
   inset: 0;
-  pointer-events: none;
   z-index: 4;
+  pointer-events: none;
   box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.7);
 }
 
@@ -426,19 +498,75 @@ button {
 
 .v86-screen {
   width: 100%;
+  min-width: 640px;
   min-height: 570px;
   display: grid;
   place-items: center;
+  overflow: visible;
+  background: #000;
 }
 
 .v86-screen>div {
-  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
 }
 
 .v86-screen canvas {
+  display: block;
   max-width: 100%;
   height: auto !important;
   image-rendering: pixelated;
+}
+
+/*
+  v86 text-mode screen.
+
+  Keep the terminal on a fixed 80-column monospace grid so ASCII art
+  does not wrap, compress or use proportional spacing.
+*/
+.v86-screen .v86-text-screen {
+  display: block !important;
+  width: 80ch !important;
+  min-width: 80ch !important;
+  max-width: none !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+
+  font-family:
+    "Liberation Mono",
+    "DejaVu Sans Mono",
+    "Courier New",
+    monospace !important;
+
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  font-kerning: none !important;
+  font-variant-ligatures: none !important;
+  text-rendering: geometricPrecision;
+
+  white-space: pre !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+.v86-screen .v86-text-screen>div,
+.v86-screen .v86-text-screen span {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  font-style: inherit !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  font-kerning: none !important;
+  font-variant-ligatures: none !important;
+
+  white-space: pre !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
 }
 
 .screen-placeholder {
@@ -450,7 +578,9 @@ button {
   justify-items: center;
   padding: 30px;
   text-align: center;
-  background: radial-gradient(circle, rgba(14, 30, 24, 0.65), rgba(0, 0, 0, 0.92) 55%);
+  background: radial-gradient(circle,
+      rgba(14, 30, 24, 0.65),
+      rgba(0, 0, 0, 0.92) 55%);
 }
 
 .screen-placeholder h2 {
@@ -473,13 +603,13 @@ button {
 
 .capture-hint {
   position: absolute;
-  z-index: 7;
   bottom: 12px;
   left: 50%;
+  z-index: 7;
   transform: translateX(-50%);
   padding: 7px 10px;
-  background: rgba(5, 7, 10, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(5, 7, 10, 0.88);
   color: var(--muted);
   font: 9px var(--mono);
 }
@@ -489,6 +619,8 @@ button {
     opacity: 0;
   }
 }
+
+/* ---------------- Content cards ---------------- */
 
 .content-grid {
   display: grid;
@@ -550,6 +682,8 @@ button {
   font-size: 13px;
 }
 
+/* ---------------- Documentation ---------------- */
+
 .docs-hero {
   max-width: 930px;
   padding: 16px 0 28px;
@@ -559,8 +693,8 @@ button {
 .docs-hero h1 {
   margin: 16px 0 10px;
   font-size: clamp(48px, 7vw, 82px);
-  letter-spacing: -0.055em;
   line-height: 1;
+  letter-spacing: -0.055em;
 }
 
 .docs-hero p {
@@ -715,7 +849,9 @@ button {
   margin-top: 70px;
   padding: 34px;
   border: 1px solid var(--line);
-  background: linear-gradient(135deg, rgba(117, 255, 188, 0.07), rgba(124, 231, 255, 0.025));
+  background: linear-gradient(135deg,
+      rgba(117, 255, 188, 0.07),
+      rgba(124, 231, 255, 0.025));
 }
 
 .docs-signoff span {
@@ -737,6 +873,8 @@ button {
 .docs-signoff a {
   color: var(--accent);
 }
+
+/* ---------------- Responsive ---------------- */
 
 @media (max-width: 900px) {
   .topbar-inner {
@@ -765,6 +903,21 @@ button {
   .screen-shell,
   .v86-screen {
     min-height: 460px;
+  }
+}
+
+@media (max-width: 680px) {
+  .brand-icon-wrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-copy strong {
+    font-size: 14px;
+  }
+
+  .brand-copy small {
+    display: none;
   }
 }
 
@@ -821,97 +974,5 @@ button {
 
   .feature-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 11px;
-  flex-shrink: 0;
-  color: inherit;
-  text-decoration: none;
-}
-
-.brand-icon-wrap {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid rgba(72, 239, 218, 0.2);
-  border-radius: 11px;
-  background:
-    linear-gradient(145deg,
-      rgba(28, 231, 210, 0.08),
-      rgba(3, 10, 17, 0.92));
-  box-shadow:
-    inset 0 0 16px rgba(49, 238, 220, 0.04),
-    0 0 18px rgba(38, 224, 213, 0.08);
-}
-
-.brand-icon {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.brand-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.brand-copy strong {
-  color: #edfaff;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.025em;
-}
-
-.brand-copy strong span {
-  color: #2ce8dc;
-}
-
-.brand-copy small {
-  color: rgba(174, 202, 211, 0.52);
-  font-family: var(--font-mono, monospace);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.brand:hover .brand-icon-wrap {
-  border-color: rgba(72, 239, 218, 0.38);
-  box-shadow:
-    inset 0 0 18px rgba(49, 238, 220, 0.07),
-    0 0 24px rgba(38, 224, 213, 0.14);
-}
-
-.topbar-inner {
-  min-height: 72px;
-}
-
-@media (max-width: 680px) {
-  .brand-icon-wrap {
-    width: 40px;
-    height: 40px;
-  }
-
-  .brand-icon {
-    width: 35px;
-    height: 35px;
-  }
-
-  .brand-copy strong {
-    font-size: 14px;
-  }
-
-  .brand-copy small {
-    display: none;
   }
 }
