@@ -1,0 +1,73 @@
+# =========================================================
+# NeuralKernel build output
+# =========================================================
+
+*.o
+*.elf
+*.iso
+*.img
+*.bin
+*.map
+*.log
+
+# Keep deployed browser assets
+!website/public/os/
+!website/public/os/neuralkernel.iso
+
+!website/public/v86/
+!website/public/v86/seabios.bin
+!website/public/v86/vgabios.bin
+!website/public/v86/libv86.js
+!website/public/v86/v86.wasm
+
+kernel.elf
+
+iso/
+initrd/initrd.nkfs
+initrd/initrd_bin.o
+
+tools/mkinitrd
+
+user/*.o
+user/*.elf
+nkfs_files/hello.elf
+
+
+# =========================================================
+# Next.js website
+# =========================================================
+
+website/node_modules/
+website/.next/
+website/out/
+website/dist/
+website/.vercel/
+
+website/.env
+website/.env.local
+website/.env.development.local
+website/.env.test.local
+website/.env.production.local
+
+website/npm-debug.log*
+website/yarn-debug.log*
+website/yarn-error.log*
+website/pnpm-debug.log*
+
+website/.eslintcache
+website/tsconfig.tsbuildinfo
+
+
+# =========================================================
+# Editor and OS files
+# =========================================================
+
+.vscode/
+.idea/
+
+.DS_Store
+Thumbs.db
+
+*.swp
+*.swo
+*~

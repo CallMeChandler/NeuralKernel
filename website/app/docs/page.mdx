@@ -1,0 +1,230 @@
+export const metadata = {
+  title: "NeuralKernel Documentation",
+  description: "Architecture, features and development journey behind NeuralKernel.",
+};
+
+<div className="docs-hero">
+  <div className="eyebrow">PROJECT DOCUMENTATION · BUILD JOURNEY</div>
+  <h1>Inside NeuralKernel</h1>
+  <p>
+    A compact technical tour of a from-scratch 32-bit x86 operating system — from the first boot instruction to Ring 3 userspace, NKFS, neural scheduling and conversational system control.
+  </p>
+</div>
+
+## Overview
+
+NeuralKernel is a freestanding **32-bit x86 operating system** written primarily in C++ and NASM. It boots through a Multiboot2-compatible path, establishes protected-mode kernel infrastructure, manages physical and virtual memory, schedules kernel and user tasks, loads ELF programs into Ring 3, exposes system calls, mounts a custom initrd filesystem, and presents an interactive shell.
+
+The later neural layer adds three compact fixed-point models: a task scheduler, a reclaimable-page scorer, and an anomaly watchdog. A fourth model powers a natural-language shell mode that maps conversational input to real kernel actions.
+
+<FeatureGrid items={[
+  { code: "BOOT", title: "Boot & CPU setup", description: "Multiboot2 entry, protected-mode startup, GDT, IDT, PIC and PIT initialization." },
+  { code: "MEM", title: "Memory system", description: "Physical page manager, paging, kernel heap and safe deferred task-stack cleanup." },
+  { code: "USR", title: "Ring 3 userspace", description: "ELF loading, user mappings, TSS-backed privilege transitions and int 0x80 syscalls." },
+  { code: "FS", title: "NKFS", description: "Custom initrd archive with runtime RAM overlays for create, update and delete operations." },
+  { code: "NN", title: "Neural runtime", description: "Q8.8 inference for scheduling, page scoring, anomaly detection and intent classification." },
+  { code: "UX", title: "Interactive environment", description: "Login, colored printk, shell, editor, system tools and conversational Neural Mode." }
+]} />
+
+## Boot path
+
+The boot pipeline begins with a Multiboot2 header and a small assembly entry point. The early code establishes a known stack and transfers execution into `kernel_main()`.
+
+From there, the kernel initializes its core subsystems in a strict order:
+
+1. VGA terminal and boot splash
+2. Global Descriptor Table
+3. Interrupt Descriptor Table
+4. PIC remapping and PIT timer
+5. Keyboard interrupt handling
+6. Physical memory manager
+7. Paging and kernel heap
+8. Embedded NKFS initrd
+9. Scheduler, syscalls and Ring 3 support
+10. Login and shell
+
+The linker script keeps the Multiboot2 header near the beginning of the ELF so GRUB can always detect it, even as the kernel binary grows.
+
+<TerminalSnippet title="boot sequence">{`[INFO] GDT loaded
+[INFO] IDT installed
+[INFO] PIC remapped
+[INFO] PIT running at 100Hz
+[INFO] Paging enabled
+[INFO] NKFS mounted
+[INFO] NeuralKernel ready`}</TerminalSnippet>
+
+## Terminal, printk and splash
+
+The text console writes directly into VGA text memory. Every character is stored with a color attribute byte, allowing the kernel to render informational messages in green, warnings in yellow, errors in red, and the shell prompt in its own accent color.
+
+The splash screen is shown before normal boot logs and gives the operating system a consistent visual identity from the first visible frame.
+
+## Interrupts and keyboard input
+
+The GDT defines kernel and user segments. The IDT exposes CPU exception handlers, hardware IRQ entries and a user-callable syscall gate. The PIC is remapped away from CPU exception vectors, while the PIT generates scheduler ticks at 100 Hz.
+
+Keyboard input is interrupt-driven. IRQ1 decodes scan codes and routes completed input through the current interface mode:
+
+- Login handler before authentication
+- Shell after authentication
+- Editor while a file is open
+
+Neural Mode deliberately reuses the normal shell line buffer. It does not create a second keyboard loop, which keeps the working IRQ path unchanged.
+
+## Memory management
+
+The physical memory manager tracks 4 KiB frames using page metadata and a usage bitmap. Paging creates the virtual-memory mappings required by the kernel and user programs.
+
+The heap is a small linked-list allocator that supports allocation, freeing, block splitting and adjacent-block coalescing. Task stacks are reclaimed using deferred cleanup: a finished task is marked first, and its stack is freed only after the CPU has safely switched to another stack.
+
+The `meminfo`, `pmm` and `heap` commands expose these layers from the shell.
+
+## Tasks and scheduling
+
+Kernel tasks have their own stacks, state and scheduler identity. The original fallback policy is round robin. Sleeping tasks are reactivated by PIT ticks, while finished tasks are skipped and eventually reclaimed.
+
+The neural scheduler augments this path rather than replacing its safety mechanics. It observes sidecar task metrics — runtime, sleep behavior, syscall activity, waiting time and memory activity — then scores READY tasks. If neural scheduling is disabled, selection immediately falls back to the original round-robin logic.
+
+<TerminalSnippet title="scheduler inspection">{`NeuralKernel> ps
+ID STATE   CLASS        SCORE NAME
+0  RUNNING BATCH            0 idle
+1  READY   INTERACTIVE    418 shell
+2  READY   CPU_BOUND      264 cpu-demo`}</TerminalSnippet>
+
+## ELF loader and Ring 3 userspace
+
+NeuralKernel can load a 32-bit i386 ELF executable from NKFS. The ELF loader validates the file header, walks its `PT_LOAD` program segments, creates user-accessible mappings, copies file data, zeros BSS memory and returns the program entry point.
+
+A Task State Segment supplies the Ring 0 stack used when userspace enters the kernel. The privilege transition is performed with an `iretd` frame containing user code/data selectors, EIP, ESP and EFLAGS.
+
+User programs call the kernel through `int 0x80`. The initial syscall table supports writing text, sleeping and exiting.
+
+## NKFS — NeuralKernel File System
+
+NKFS is a compact custom initrd format built specifically for the project. Files placed in `nkfs_files/` are automatically packed during the build.
+
+The archive contains:
+
+- A magic header
+- File count
+- Fixed-size directory entries
+- Raw file data
+
+At runtime, the original archive is read-only. A heap-backed RAM overlay shadows files that are created, edited or deleted during the current session. This makes shell and editor writes feel persistent until the machine reboots.
+
+NeuralKernel uses its own `.nkfs` extension for user-editable text files. Commands such as `cat`, `write`, `rm` and `edit` enforce this extension so system assets such as `users` and `hello.elf` are not casually overwritten.
+
+<TerminalSnippet title="nkfs session">{`NeuralKernel> write notes.nkfs "today I built an OS"
+Written.
+
+NeuralKernel> cat notes.nkfs
+today I built an OS
+
+NeuralKernel> edit notes.nkfs`}</TerminalSnippet>
+
+## Login and shell
+
+Credentials are stored in the initrd `users` file using a simple `username:password` format. The login screen hides password characters and loops after failed attempts. The shell starts only after authentication succeeds.
+
+`whoami` reads the active username. `uptime` converts PIT ticks into seconds. `exit` logs out and returns to the login prompt. `reboot` resets the virtual machine through the keyboard controller command port.
+
+The shell includes system, memory, task, filesystem and neural commands:
+
+- `help`, `echo`, `clear`, `uname`
+- `whoami`, `uptime`, `telemetry`
+- `pmm`, `heap`, `meminfo`
+- `ps`, `neuralstats`, `neural-on`, `neural-off`
+- `ls`, `cat`, `write`, `rm`, `edit`
+- `neural`, `exit`, `reboot`
+
+## Full-screen text editor
+
+`edit filename.nkfs` opens a simple VGA editor. The editor owns a fixed in-memory text buffer and tracks the cursor position across lines.
+
+Supported controls:
+
+- Arrow keys to move
+- Backspace to delete
+- Enter for a new line
+- Ctrl+S to save into the VFS overlay
+- Ctrl+Q to return to the shell
+
+The editor intentionally stays small and deterministic: no dynamic document tree, no terminal escape parser, and no dependency on userspace libraries.
+
+## Neural runtime
+
+All neural models share the fixed-point inference engine in `nn.cpp`. Values use **Q8.8 arithmetic**, meaning integer `256` represents real value `1.0`. This avoids FPU setup and makes inference predictable inside a small kernel.
+
+### Neural task scheduler
+
+The scheduler classifies task behavior as interactive, CPU-bound, I/O-bound or batch-like. It then blends several classical scheduling signals into a final score. `neural-on` enables this scorer; `neural-off` restores pure round robin.
+
+### Neural page predictor
+
+The PMM model scores only pages explicitly marked reclaimable. It considers recency, frequency, age, ownership, dirty state and allocation class. Normal kernel, heap, ELF and stack pages are never silently evicted.
+
+### Anomaly watchdog
+
+The watchdog samples runtime telemetry approximately twice per second. It looks for repeated CPU monopolization, syscall spikes, unusual memory growth and starvation. Persistent severe anomalies can receive a scheduling penalty or be terminated after multiple strikes.
+
+### Natural-language Neural Mode
+
+Typing `neural` changes the prompt to `NK-AI>`. A small character n-gram classifier maps natural sentences to intents such as listing files, reading a document, reporting memory, showing tasks, checking uptime or rebooting.
+
+It is intentionally not a large generative language model. It is a small deterministic classifier wrapped around live kernel data and conversational response templates.
+
+<TerminalSnippet title="neural mode">{`NeuralKernel> neural
+Neural conversational mode enabled.
+
+NK-AI> how is memory looking
+Memory looks healthy.
+Physical pages: 312 used, 3784 free.
+Heap: 41 KB used.
+
+NK-AI> show me my files
+I found readme.nkfs, notes.nkfs and hello.elf.`}</TerminalSnippet>
+
+## Browser demo
+
+The Testing tab uses a browser-side x86 emulator. Add the built ISO at:
+
+```text
+public/os/neuralkernel.iso
+```
+
+and the v86 runtime files under:
+
+```text
+public/v86/
+```
+
+The emulator downloads these static assets and executes NeuralKernel entirely inside the visitor's browser. Runtime NKFS changes last for the current emulator session and reset when the virtual machine is restarted.
+
+## Project structure
+
+```text
+NeuralKernel/
+├── boot/              Multiboot2 and CPU entry assembly
+├── kernel/            Kernel subsystems and neural runtime
+├── user/              Ring 3 ELF program
+├── tools/             NKFS and model-export tooling
+├── nkfs_files/        Files embedded in the initrd
+├── initrd/            Generated NKFS image
+├── website/           Browser demo and documentation
+├── Makefile
+└── linker.ld
+```
+
+## What this project represents
+
+NeuralKernel began as a low-level systems exercise and gradually became a complete experimental environment: boot code, memory, interrupts, scheduling, privilege separation, files, editing, authentication, neural policy models and natural-language control — all inside one compact operating system.
+
+It is not intended to replace a production kernel. It is a learning-focused platform for exploring how traditional operating-system mechanisms can coexist with small deterministic machine-learning models.
+
+<div className="docs-signoff">
+  <span>END OF DOCUMENT</span>
+  <h2>Made with love by CallMeChandler.</h2>
+  <p>
+    Source, experiments and future work: <a href="https://github.com/CallMeChandler">github.com/CallMeChandler</a>
+  </p>
+</div>
